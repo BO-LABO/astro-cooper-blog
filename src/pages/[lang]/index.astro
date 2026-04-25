@@ -29,6 +29,7 @@ import CTA from '~/components/sections/CTA.astro';
 import FAQ from '~/components/sections/FAQ.astro';
 import LogoCloud from '~/components/sections/LogoCloud.astro';
 import TechStack from '~/components/sections/TechStack.astro';
+import NewsletterSection from '~/components/sections/NewsletterSection.astro';
 
 export async function getStaticPaths() {
   return Object.keys(languages).map((lang) => ({ params: { lang } }));
@@ -251,6 +252,11 @@ const homeFaqs = [
     <Section class="py-0 overflow-visible">
     <FAQ items={homeFaqs} />
     </Section>
+
+    <NewsletterSection 
+        title="Stay Informed" 
+        description="Join our newsletter to receive the latest updates, technical deep-dives, and exclusive content from the Cooper universe."
+    />
 
     <CTA 
         title={t['cta.readyToLaunch']}
