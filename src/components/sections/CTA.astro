@@ -41,16 +41,16 @@ const isBoxed = variant === 'boxed';
 
     <div class={
       isBoxed 
-        ? "p-12 rounded-3xl bg-primary text-primary-foreground text-center relative overflow-hidden group shadow-2xl shadow-primary/25"
+        ? "p-12 rounded-3xl bg-primary !text-primary-foreground text-center relative overflow-hidden group shadow-2xl shadow-primary/25 [&_.text-primary]:!text-primary-foreground"
         : "max-w-4xl mx-auto px-6 relative z-10 text-center"
     }>
         {isBoxed && (
           <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
         )}
 
-        <h2 class={isBoxed ? "text-3xl font-bold mb-4 relative z-10" : "text-5xl md:text-7xl font-display font-bold mb-8"} set:html={title} />
+        <h2 class={isBoxed ? "text-3xl font-bold mb-4 relative z-10 !text-primary-foreground" : "text-5xl md:text-7xl font-display font-bold mb-8"} set:html={title} />
         
-        <p class={isBoxed ? "opacity-80 mb-8 max-w-md mx-auto relative z-10" : "text-xl text-muted-foreground mb-10 max-w-2xl mx-auto"}>
+        <p class={isBoxed ? "!text-primary-foreground/80 mb-8 max-w-md mx-auto relative z-10" : "text-xl text-muted-foreground mb-10 max-w-2xl mx-auto"}>
             {description}
         </p>
         
