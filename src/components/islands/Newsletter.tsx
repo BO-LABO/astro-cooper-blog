@@ -76,7 +76,7 @@ export default function Newsletter({
             <motion.div key="form" exit={{ opacity: 0, scale: 0.9 }}>
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div>
-                  <h3 className="text-3xl font-display font-bold mb-4">{title}</h3>
+                  <h2 id="newsletter-island-title" className="text-3xl font-display font-bold mb-4">{title}</h2>
                   <p className="text-muted-foreground leading-relaxed">
                     {description}
                   </p>
@@ -86,21 +86,25 @@ export default function Newsletter({
                   <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Honeypot field (hidden from users) */}
                     <input 
-                      type="text" 
+                      type="hidden" 
                       name="b_name" 
-                      tabIndex={-1} 
-                      className="absolute opacity-0 pointer-events-none"
                       value={honeypot}
-                      onChange={(e) => setHoneypot(e.target.value)}
+                      aria-hidden="true"
                     />
                     
                     <div className="relative">
+                      <label htmlFor="newsletter-email-island" className="sr-only">
+                        {placeholder}
+                      </label>
                       <input
                         required
+                        id="newsletter-email-island"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder={placeholder}
+                        aria-label={placeholder}
+                        aria-labelledby="newsletter-island-title"
                         className="w-full bg-foreground/5 border border-foreground/10 rounded-xl px-4 py-4 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-foreground/30"
                       />
                       <Send className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground/20" />
