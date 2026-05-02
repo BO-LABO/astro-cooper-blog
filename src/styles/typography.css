@@ -11,6 +11,11 @@
     margin-bottom: 2rem !important;
   }
 
+  /* RGAA 4 Rule 3.2.1: Improve contrast for Shiki comments (Github Dark default) */
+  .prose pre code span[style*="color:#6A737D"] {
+    color: #9BA3AF !important; /* Lighter gray for 4.5:1+ contrast */
+  }
+
   .prose img {
     margin-top: 2rem;
     margin-bottom: 2rem;
