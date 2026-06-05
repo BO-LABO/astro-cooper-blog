@@ -26,7 +26,7 @@ const {
 } = Astro.props;
 ---
 
-<section class="min-h-[90vh] flex items-center justify-center relative overflow-hidden pt-32 bg-background">
+<section id="hero-section" class="min-h-[90vh] flex items-center justify-center relative overflow-hidden bg-background">
   <div class="absolute inset-0 z-0 opacity-40">
      <div class="absolute top-[20%] left-[20%] w-[500px] h-[500px] bg-blue-900/40 rounded-full blur-[128px] animate-pulse"></div>
      <div class="absolute bottom-[20%] right-[20%] w-[500px] h-[500px] bg-indigo-900/40 rounded-full blur-[128px] animate-pulse" style="animation-delay: 2s;"></div>
@@ -69,6 +69,41 @@ const {
     </div>
   </div>
 </section>
+
+<script>
+  // ヘッダー（固定）の高さを動的に取得してHeroセクションのpaddingを調整
+  function adjustHeroPadding() {
+    const header = document.querySelector('#main-header') as HTMLElement | null;
+    const banner = document.querySelector('#announcement-banner') as HTMLElement | null;
+    const hero = document.querySelector('#hero-section') as HTMLElement | null;
+
+    if (!hero) return;
+
+    let totalOffset = 0;
+
+    if (header) {
+      totalOffset += header.getBoundingClientRect().height;
+    }
+    if (banner && !banner.classList.contains('hidden')) {
+      totalOffset += banner.getBoundingClientRect().height;
+    }
+
+    hero.style.paddingTop = `${totalOffset}px`;
+  }
+
+  // 初回実行
+  adjustHeroPadding();
+
+  // バナーの開閉に追従するため MutationObserver を設置
+  const banner = document.querySelector('#announcement-banner');
+  if (banner) {
+    const observer = new MutationObserver(() => adjustHeroPadding());
+    observer.observe(banner, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  // リサイズ時にも再計算
+  window.addEventListener('resize', adjustHeroPadding, { passive: true });
+</script>
 
 <style>
   .hero-content {
