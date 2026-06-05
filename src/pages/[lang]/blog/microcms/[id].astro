@@ -1,0 +1,28 @@
+---
+export const prerender = true;
+import Layout from '~/layouts/Layout.astro';
+import Container from '~/components/ui/Container.astro';
+import { client } from '~/library/microcms';
+
+export async function getStaticPaths() {
+  const response = await client.get({ endpoint: 'blogs' });
+  const posts = response.contents;
+
+  return posts.flatMap((post: any) => [
+    { params: { lang: 'ja', id: post.id }, props: { post } },
+    { params: { lang: 'en', id: post.id }, props: { post } },
+  ]);
+}
+
+const { post } = Astro.props;
+---
+
+<Layout title={post.title} description={post.title}>
+  <Container as="article" class="py-16 max-w-3xl">
+    {post.eyecatch && (
+      <img src={post.eyecatch.url} alt={post.title} class="w-full rounded-xl mb-8" />
+    )}
+    <h1 class="text-3xl font-bold mb-8">{post.title}</h1>
+    <div class="prose dark:prose-invert max-w-none" set:html={post.content} />
+  </Container>
+</Layout>

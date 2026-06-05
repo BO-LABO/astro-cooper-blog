@@ -1,0 +1,37 @@
+---
+export const prerender = true;
+import Layout from '~/layouts/Layout.astro';
+import PageHeader from '~/components/layout/PageHeader.astro';
+import Container from '~/components/ui/Container.astro';
+import { client } from '~/library/microcms';
+
+export async function getStaticPaths() {
+  return [
+    { params: { lang: 'ja' } },
+    { params: { lang: 'en' } },
+  ];
+}
+
+const response = await client.get({ endpoint: 'blogs' });
+const posts = response.contents;
+const { lang } = Astro.params;
+---
+
+<Layout title="Blog" description="microCMSの記事一覧">
+  <PageHeader title="Blog" description="最新の記事一覧" />
+
+  <Container as="section" class="pb-24">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+      {posts.map((post: any) => (
+        <a href={`/${lang}/blog/microcms/${post.id}`} class="block rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden hover:shadow-lg transition-shadow">
+          {post.eyecatch && (
+            <img src={post.eyecatch.url} alt={post.title} class="w-full h-48 object-cover" />
+          )}
+          <div class="p-4">
+            <h2 class="text-lg font-bold">{post.title}</h2>
+          </div>
+        </a>
+      ))}
+    </div>
+  </Container>
+</Layout>
