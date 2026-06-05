@@ -29,7 +29,7 @@ const t = useTranslations(lang);
   <Container as="section" class="pb-24">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
       {posts.map((post: any) => (
-        <Card href={`/${lang}/blog/${post.id}`} class="p-0 overflow-hidden hover:shadow-primary/10 hover:-translate-y-1 block h-full group">
+        <Card href={`/${lang}/blog/microcms/${post.id}`} class="p-0 overflow-hidden hover:shadow-primary/10 hover:-translate-y-1 block h-full group">
           <div class="relative aspect-video w-full overflow-hidden bg-muted">
             {post.eyecatch ? (
               <img

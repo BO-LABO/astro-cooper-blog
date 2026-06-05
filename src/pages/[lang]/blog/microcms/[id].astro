@@ -4,15 +4,18 @@ import Layout from '~/layouts/Layout.astro';
 import ScrollProgress from '~/components/layout/ScrollProgress.astro';
 import { client } from '~/library/microcms';
 import { isRtl } from '~/i18n/utils';
+import { languages } from '~/i18n/ui';
 
 export async function getStaticPaths() {
   const response = await client.get({ endpoint: 'blogs' });
   const posts = response.contents;
 
-  return posts.flatMap((post: any) => [
-    { params: { lang: 'ja', id: post.id }, props: { post } },
-    { params: { lang: 'en', id: post.id }, props: { post } },
-  ]);
+  return posts.flatMap((post: any) =>
+    Object.keys(languages).map((lang) => ({
+      params: { lang, id: post.id },
+      props: { post },
+    }))
+  );
 }
 
 const { post } = Astro.props;
