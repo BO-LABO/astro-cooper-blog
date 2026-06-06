@@ -47,7 +47,7 @@ const primaryHref = ACTION_LINKS.primary.href.startsWith('/docs')
 
 <header id="main-header" class="w-full transition-all duration-500 border-b border-transparent bg-transparent py-4 text-gray-900 dark:text-white">
   <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-    <a href={`/${lang}`} class="flex items-center gap-3 text-xl font-bold tracking-tight text-primary dark:text-white group">
+    <a href={`/${lang}`} class="flex items-center gap-3 text-xl font-bold tracking-tight text-primary dark:text-white group shrink-0 whitespace-nowrap">
       {siteConfig.logo && (
         siteConfig.logo.strategy === 'switch' ? (
           <>
@@ -78,7 +78,7 @@ const primaryHref = ACTION_LINKS.primary.href.startsWith('/docs')
           />
         )
       )}
-      <span class="inline">{t['brand.name'] || siteConfig.name}</span>
+      <span class="inline text-sm md:text-xl">{t['brand.name'] || siteConfig.name}</span>
     </a>
     <div class="flex-1 flex justify-center mx-4 lg:mx-8">
       <DesktopNav client:only="react" links={links} currentPath={Astro.url.pathname} />
