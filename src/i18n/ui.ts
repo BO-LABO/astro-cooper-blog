@@ -18,12 +18,15 @@ export function parseProperties(content: string): Record<string, string> {
 
 const locales = import.meta.glob('./locales/*.properties', { query: '?raw', eager: true });
 
+const SUPPORTED_LANGS = ['ja', 'en'];
+
 export const languages: Record<string, string> = {};
 export const ui: Record<string, Record<string, string>> = {};
+export const availableLangs = SUPPORTED_LANGS;
 
 for (const path in locales) {
   const code = path.match(/\/([a-z]{2})\.properties$/)?.[1];
-  if (code) {
+  if (code && SUPPORTED_LANGS.includes(code)) {
     const content = (locales[path] as { default: string }).default;
     const props = parseProperties(content);
     ui[code] = props;

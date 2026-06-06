@@ -19,10 +19,6 @@ export function useTranslations(lang: string | undefined) {
   });
 }
 
-
-
-export const RTL_LOCALES = ['ar', 'he', 'fa', 'ur'];
-
-export function isRtl(lang: string): boolean {
-  return RTL_LOCALES.includes(lang);
+export function isRtl(_: string): boolean {
+  return false;
 }
