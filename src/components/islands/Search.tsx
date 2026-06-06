@@ -182,10 +182,10 @@ export default function Search({ placeholder = "Search...", lang = "en" }: Searc
                           onClick={() => setOpen(false)}
                           className="flex items-center gap-3 p-3 rounded-xl bg-foreground/5 hover:bg-foreground/10 transition-colors border border-foreground/5 group"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-background border border-foreground/10 flex items-center justify-center text-foreground group-hover:text-primary transition-colors">
+                          <div className="w-8 h-8 rounded-lg bg-background border border-foreground/10 flex items-center justify-center text-purple-500 md:text-foreground group-hover:text-primary transition-colors">
                             <link.icon size={16} />
                           </div>
-                          <span className="text-sm font-bold text-foreground group-hover:text-primary">{link.label}</span>
+                          <span className="text-sm font-bold text-purple-500 md:text-foreground group-hover:text-primary">{link.label}</span>
                         </a>
                       ))}
                     </div>
