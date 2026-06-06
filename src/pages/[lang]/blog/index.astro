@@ -7,6 +7,10 @@ import Card from '~/components/ui/Card.astro';
 import { client } from '~/library/microcms';
 import { useTranslations } from '~/i18n/utils';
 import { languages } from '~/i18n/ui';
+import translate from 'translate';
+
+// Google翻訳を有効化
+translate.engine = 'google';
 
 export async function getStaticPaths() {
   const response = await client.get({ endpoint: 'blogs' });
@@ -21,6 +25,24 @@ export async function getStaticPaths() {
 const { posts } = Astro.props;
 const { lang } = Astro.params;
 const t = useTranslations(lang);
+
+// 英語（en）モードのときだけ、一覧記事のタイトルをビルド時に自動翻訳する
+const displayPosts = await Promise.all(
+  posts.map(async (post: any) => {
+    if (lang === 'en') {
+      try {
+        const translatedTitle = await translate(post.title, { from: 'ja', to: 'en' });
+        return {
+          ...post,
+          title: translatedTitle
+        };
+      } catch (error) {
+        console.error("Index.astro translation failed:", error);
+      }
+    }
+    return post;
+  })
+);
 ---
 
 <Layout title="Blog" description="最新記事一覧">
@@ -28,7 +50,7 @@ const t = useTranslations(lang);
 
   <Container as="section" class="pb-24">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-      {posts.map((post: any) => (
+      {displayPosts.map((post: any) => (
         <Card href={`/${lang}/blog/microcms/${post.id}`} class="p-0 overflow-hidden hover:shadow-primary/10 hover:-translate-y-1 block h-full group">
           <div class="relative aspect-video w-full overflow-hidden bg-muted">
             {post.eyecatch ? (
