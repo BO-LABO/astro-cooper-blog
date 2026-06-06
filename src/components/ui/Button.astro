@@ -1,6 +1,5 @@
 ---
 import { twMerge } from 'tailwind-merge';
-
 interface Props {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'icon';
   size?: 'sm' | 'md' | 'lg';
@@ -8,45 +7,31 @@ interface Props {
   href?: string;
   target?: string;
   rel?: string;
-  [key: string]: any; // Allow other props like onClick, type, etc.
+  [key: string]: any;
 }
-
 const { 
     variant = 'primary', 
     size = 'md', 
     class: className,
     ...rest 
 } = Astro.props;
-
 const baseStyles = 'inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 whitespace-nowrap';
-
 const variants = {
-  primary: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25',
-  secondary: 'bg-foreground/5 text-foreground hover:bg-foreground/10 border border-foreground/10',
-  outline: 'border border-foreground/10 bg-transparent hover:bg-foreground/5 text-foreground',
-  ghost: 'hover:bg-primary/5 text-primary',
-  icon: 'p-0 aspect-square hover:bg-foreground/5 rounded-full'
+  primary: 'bg-blue-600 !text-white hover:bg-blue-700 shadow-lg',
+  secondary: 'bg-transparent !text-purple-500 border-2 border-purple-500 hover:bg-purple-500/10',
+  outline: 'border border-white/20 bg-transparent !text-white hover:bg-white/10',
+  ghost: 'hover:bg-blue-600/10 !text-blue-600',
+  icon: 'p-0 aspect-square hover:bg-white/10 rounded-full'
 };
-
 const sizes = {
   sm: 'text-xs px-3 py-1.5 rounded-md gap-1.5',
   md: 'text-sm px-6 py-2.5 rounded-lg gap-2',
   lg: 'text-base px-8 py-3 rounded-xl gap-2.5'
 };
-
-// Override size for icon variant
 const sizeStyles = variant === 'icon' ? 'h-9 w-9' : sizes[size];
-
-const classes = twMerge(
-    baseStyles, 
-    variants[variant], 
-    sizeStyles,
-    className
-);
-
+const classes = twMerge(baseStyles, variants[variant], sizeStyles, className);
 const Tag = Astro.props.href ? 'a' : 'button';
 ---
-
 <Tag class={classes} {...rest}>
     <slot />
 </Tag>
