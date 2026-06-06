@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X } from 'lucide-react';
 import BrandIcon from '~/components/common/BrandIcon';
+import Search from '~/components/islands/Search';
 import * as Icons from 'lucide-react';
 import { ACTION_LINKS } from '~/site.config';
 
@@ -21,6 +22,8 @@ interface NavLink {
 interface MobileMenuProps {
   links: NavLink[];
   currentPath?: string;
+  lang?: string;
+  availableLangs?: string[];
   labels?: {
     menu: string;
     getStarted: string;
@@ -30,11 +33,19 @@ interface MobileMenuProps {
 export default function MobileMenu({ 
   links, 
   currentPath = '/',
+  lang = 'en',
+  availableLangs = [],
   labels = {
     menu: 'Menu',
     getStarted: 'Get Started'
   }
 }: MobileMenuProps) {
+  const getLocaleHref = (locale: string) => {
+    if (!currentPath || currentPath === '/') {
+      return `/${locale}`;
+    }
+    return currentPath.replace(/^\/[^\/]+/, `/${locale}`);
+  }
   const [isOpen, setIsOpen] = useState(false);
 
   // Prevent scrolling when menu is open
@@ -160,6 +171,25 @@ export default function MobileMenu({
               </nav>
 
               <div className="pt-6 md:pt-8 border-t border-foreground/10 flex flex-col gap-4 mt-auto">
+                 <div className="space-y-3">
+                    <Search placeholder="Search..." lang={lang} />
+                    {availableLangs.length > 0 && (
+                      <div>
+                        <div className="mb-2 text-sm font-semibold uppercase tracking-[0.24em] text-foreground/70">Language</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {availableLangs.map((locale) => (
+                            <a
+                              key={locale}
+                              href={getLocaleHref(locale)}
+                              className="block w-full py-2 text-center text-sm font-medium rounded-lg border border-foreground/10 bg-foreground/5 text-foreground hover:bg-foreground/10 transition-colors"
+                            >
+                              {locale.toUpperCase()}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                 </div>
                  <a 
                     href={ACTION_LINKS.primary.href}
                     className="w-full py-3 px-4 bg-primary text-primary-foreground text-center font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/25"
