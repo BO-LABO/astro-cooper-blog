@@ -41,6 +41,7 @@ const isImageRight = imagePosition === 'right' && !reverse;
           <img 
             src={image} 
             alt={imageAlt} 
+            loading="lazy"
             class="w-full h-full object-cover aspect-video md:aspect-auto"
           />
         ) : (

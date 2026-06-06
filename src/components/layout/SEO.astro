@@ -12,8 +12,10 @@ interface Props {
 }
 
 const { title, description, image, imageWidth, imageHeight, imageAlt, article = false, noindex = false, nofollow = false } = Astro.props;
-import { siteConfig } from '~/site.config';
+import { siteConfig, ACTION_LINKS } from '~/site.config';
+const locale = Astro.params.lang || 'en';
 const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
+const twitterHandle = ACTION_LINKS.social.twitter ? `@${new URL(ACTION_LINKS.social.twitter).pathname.replace(/^\//, '')}` : undefined;
 
 const ogImageUrl = image || siteConfig.ogImage;
 
@@ -53,6 +55,7 @@ const robots = [
 <meta property="og:image:alt" content={imageAlt || title} />
 <meta property="og:site_name" content={siteConfig.name} />
 <meta property="og:logo" content={new URL(siteConfig.logo.src, Astro.url).toString()} />
+<meta property="og:locale" content={locale} />
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
@@ -60,3 +63,5 @@ const robots = [
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(ogImageUrl, Astro.url).toString()} />
+{twitterHandle && <meta name="twitter:site" content={twitterHandle} />}
+{twitterHandle && <meta name="twitter:creator" content={twitterHandle} />}

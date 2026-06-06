@@ -40,9 +40,14 @@ const translateNavLinks = (links: any[], lang: string, t: any): any[] => {
 
 const links = translateNavLinks(NAV_LINKS, lang, t);
 
-const primaryHref = ACTION_LINKS.primary.href.startsWith('/docs')
-  ? ACTION_LINKS.primary.href
-  : `/${lang}${ACTION_LINKS.primary.href.startsWith('/') ? '' : '/'}${ACTION_LINKS.primary.href}`.replace(/\/$/, '');
+const getLocalizedHref = (href: string) => {
+  if (!href) return `/${lang}`;
+  if (href.startsWith('http')) return href;
+  const trimmed = href.replace(/\/+$|^\/+/, '');
+  return `/${lang}/${trimmed}`.replace(/\/+/g, '/');
+};
+
+const primaryHref = getLocalizedHref(ACTION_LINKS.primary.href);
 ---
 
 <header id="main-header" class="w-full transition-all duration-500 border-b border-transparent bg-transparent py-4 text-gray-900 dark:text-white">
@@ -120,6 +125,8 @@ const primaryHref = ACTION_LINKS.primary.href.startsWith('/docs')
           currentPath={Astro.url.pathname} 
           lang={lang}
           availableLangs={availableLangs}
+          primaryHref={primaryHref}
+          searchPlaceholder={t['search.placeholder']}
           labels={{
             menu: t['nav.menu'],
             getStarted: t['hero.getStarted'] || ACTION_LINKS.primary.label

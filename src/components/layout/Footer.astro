@@ -55,7 +55,7 @@ const t = useTranslations(lang);
                 <li>
                   <a 
                     href={href} 
-                    class="hover:text-slate-900 dark:hover:text-white transition-colors"
+                    class="inline-flex items-center px-2 py-2 rounded-md hover:text-slate-900 dark:hover:text-white transition-colors"
                     aria-label={t[`footer.${link.label.toLowerCase()}` as keyof typeof t] || link.label}
                   >
                     {t[`footer.${link.label.toLowerCase()}` as keyof typeof t] || link.label}
@@ -74,19 +74,19 @@ const t = useTranslations(lang);
       </div>
       
       <div class="flex gap-4">
-        <a href={ACTION_LINKS.social.linkedin} target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors" aria-label="LinkedIn">
+        <a href={ACTION_LINKS.social.linkedin} target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10" aria-label="LinkedIn">
           <BrandIcon icon="linkedin" className="w-5 h-5" strokeWidth={1.5} />
         </a>
-        <a href={ACTION_LINKS.social.youtube} target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors" aria-label="YouTube">
+        <a href={ACTION_LINKS.social.youtube} target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10" aria-label="YouTube">
           <BrandIcon icon="youtube" className="w-5 h-5" strokeWidth={1.5} />
         </a>
-        <a href={ACTION_LINKS.social.github} target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors" aria-label="GitHub">
+        <a href={ACTION_LINKS.social.github} target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10" aria-label="GitHub">
           <BrandIcon icon="github" className="w-5 h-5" strokeWidth={1.5} />
         </a>
-        <a href={ACTION_LINKS.social.facebook} target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors" aria-label="Facebook">
+        <a href={ACTION_LINKS.social.facebook} target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10" aria-label="Facebook">
           <BrandIcon icon="facebook" className="w-5 h-5" strokeWidth={1.5} />
         </a>
-        <a href={ACTION_LINKS.social.twitter} target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors" aria-label="X (Twitter)">
+        <a href={ACTION_LINKS.social.twitter} target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10" aria-label="X (Twitter)">
           <BrandIcon icon="x" className="w-5 h-5" strokeWidth={1.5} />
         </a>
       </div>

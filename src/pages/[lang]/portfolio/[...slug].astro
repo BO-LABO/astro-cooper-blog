@@ -87,7 +87,7 @@ const availableLangs = allPosts
             </div>
             
             <div class="rounded-3xl overflow-hidden border border-black/10 dark:border-white/10 mb-16 shadow-2xl bg-black/5 dark:bg-white/5">
-                 <img width={1020} height={510} src={post.data.heroImage} alt="" class="w-full h-auto" />
+                 <img width={1020} height={510} src={post.data.heroImage} alt={post.data.title} loading="eager" class="w-full h-auto" />
             </div>
 
             <div class="prose dark:prose-invert prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-headings:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 prose-img:rounded-xl">

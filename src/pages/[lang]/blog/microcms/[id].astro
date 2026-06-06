@@ -22,7 +22,7 @@ const { post } = Astro.props;
 const { lang } = Astro.params;
 ---
 
-<Layout title={post.title} description={post.title}>
+<Layout title={post.title} description={post.title} image={post.eyecatch?.url} imageAlt={post.title} article={true}>
   <ScrollProgress />
   <article class="max-w-4xl mx-auto px-6 pt-40 pb-20">
     <div class="mb-8">
@@ -35,7 +35,7 @@ const { lang } = Astro.params;
     <div class="mb-12 text-center">
       {post.eyecatch && (
         <div class="rounded-2xl overflow-hidden mb-8 border border-black/10 dark:border-white/10 shadow-2xl">
-          <img src={post.eyecatch.url} alt={post.title} class="w-full object-cover aspect-video" />
+          <img src={post.eyecatch.url} alt={post.title} loading="eager" class="w-full object-cover aspect-video" />
         </div>
       )}
 

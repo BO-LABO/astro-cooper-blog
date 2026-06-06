@@ -24,6 +24,8 @@ interface MobileMenuProps {
   currentPath?: string;
   lang?: string;
   availableLangs?: string[];
+  primaryHref?: string;
+  searchPlaceholder?: string;
   labels?: {
     menu: string;
     getStarted: string;
@@ -35,6 +37,8 @@ export default function MobileMenu({
   currentPath = '/',
   lang = 'en',
   availableLangs = [],
+  primaryHref = ACTION_LINKS.primary.href,
+  searchPlaceholder = 'Search...',
   labels = {
     menu: 'Menu',
     getStarted: 'Get Started'
@@ -57,9 +61,26 @@ export default function MobileMenu({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', onKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isOpen]);
+
   return (
     <>
       <button 
+        type="button"
         onClick={() => setIsOpen(true)}
         className="p-2 text-foreground hover:bg-foreground/5 rounded-md transition-colors z-50 relative"
         aria-label="Open Mobile Menu"
@@ -97,6 +118,7 @@ export default function MobileMenu({
               <div className="flex justify-between items-center mb-6">
                 <span className="text-2xl font-bold text-primary md:text-lg">{labels.menu}</span>
                 <button 
+                  type="button"
                   onClick={() => setIsOpen(false)}
                   className="p-2 text-foreground/70 hover:text-foreground rounded-full hover:bg-foreground/5 transition-colors"
                   aria-label="Close Mobile Menu"
@@ -172,7 +194,7 @@ export default function MobileMenu({
 
               <div className="pt-6 md:pt-8 border-t border-foreground/10 flex flex-col gap-4 mt-auto">
                  <div className="space-y-3">
-                    <Search placeholder="Search..." lang={lang} />
+                    <Search placeholder={searchPlaceholder} lang={lang} />
                     {availableLangs.length > 0 && (
                       <div>
                         <div className="mb-2 text-sm font-semibold uppercase tracking-[0.24em] text-foreground/70">Language</div>
@@ -191,7 +213,7 @@ export default function MobileMenu({
                     )}
                  </div>
                  <a 
-                    href={ACTION_LINKS.primary.href}
+                    href={primaryHref}
                     className="w-full py-3 px-4 bg-primary text-primary-foreground text-center font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/25"
                   >
                     {labels.getStarted}
