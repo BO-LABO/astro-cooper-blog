@@ -28,8 +28,11 @@ const { message, link, linkText } = Astro.props;
   <!-- スマホ: マーキースクロール表示 -->
   <div class="flex md:hidden items-center justify-between px-4 py-2 gap-3">
     <div class="flex-1 overflow-hidden">
-      <div class="marquee-track whitespace-nowrap text-sm font-medium">
-        <span>{message}&nbsp;&nbsp;&nbsp;{message}&nbsp;&nbsp;&nbsp;</span>
+      <div class="marquee-wrapper">
+        <div class="marquee-track text-sm font-medium">
+          <span class="marquee-item">{message}&nbsp;&nbsp;&nbsp;</span>
+          <span className="marquee-item">{message}&nbsp;&nbsp;&nbsp;</span>
+        </div>
       </div>
     </div>
     {link && (
@@ -44,21 +47,25 @@ const { message, link, linkText } = Astro.props;
 </div>
 
 <style is:global>
+  .marquee-wrapper {
+    overflow: hidden;
+  }
+
   .marquee-track {
     display: inline-flex;
     align-items: center;
-    min-width: 100%;
     animation: marquee 18s linear infinite;
     will-change: transform;
   }
 
-  .marquee-track span {
+  .marquee-item {
+    display: inline-flex;
     white-space: nowrap;
   }
 
   @keyframes marquee {
     0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
+    100% { transform: translateX(-50%); }
   }
 
   @media (min-width: 768px) {

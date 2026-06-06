@@ -1,0 +1,38 @@
+---
+const { lang = 'ja' } = Astro.params;
+---
+<section class="py-24 bg-white dark:bg-zinc-950">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mx-auto max-w-2xl mb-12">
+      <p class="text-sm font-semibold uppercase tracking-[0.3em] text-primary/70 mb-4">3ステップで簡単</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">登録からツール解放までの流れ</h2>
+      <p class="text-gray-600 dark:text-gray-400">ASTRO口座開設からID取得、そしてツール完全版の解放までをわかりやすく整理しました。</p>
+    </div>
+
+    <div class="grid gap-6 md:grid-cols-3">
+      <div class="rounded-3xl border border-gray-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-8 text-center flex flex-col gap-4">
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary text-lg font-bold">1</div>
+        <h3 class="text-xl font-semibold text-slate-900 dark:text-white">当サイトの指定リンクからASTROに口座開設</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400">まずは当サイトが案内する公式リンクからASTROの新規口座を開設してください。</p>
+      </div>
+
+      <div class="rounded-3xl border border-gray-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-8 text-center flex flex-col gap-4">
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary text-lg font-bold">2</div>
+        <h3 class="text-xl font-semibold text-slate-900 dark:text-white">取引IDを取得</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400">口座開設後に必要な取引IDを受け取り、ツール登録準備を進めます。</p>
+      </div>
+
+      <div class="rounded-3xl border border-gray-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-8 text-center flex flex-col gap-4">
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary text-lg font-bold">3</div>
+        <h3 class="text-xl font-semibold text-slate-900 dark:text-white">IDを登録してツール完全版を解放</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400">取得したIDを入力して、ASTROサインツールの全機能を解除しましょう。</p>
+      </div>
+    </div>
+
+    <div class="mt-10 text-center">
+      <a href={`/${lang}/pricing`} class="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:bg-primary/90">
+        今すぐ口座開設する
+      </a>
+    </div>
+  </div>
+</section>

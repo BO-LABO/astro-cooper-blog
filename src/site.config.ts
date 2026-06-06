@@ -67,35 +67,17 @@ export const siteConfig = {
 export const NAV_LINKS = [
   { 
     href: '/features', 
-    label: 'Product',
+    label: 'Work',
     children: [
         { href: '/features', label: 'Features', description: 'What makes us different', icon: 'Zap' },
         { href: '/pricing', label: 'Pricing', description: 'Plans for every team', icon: 'CreditCard' },
     ]
   },
   { 
-    href: '/docs', 
+    href: '/blog', 
     label: 'Resources',
     children: [
-        { href: '/docs/getting-started', label: 'Docs', description: 'Start building today', icon: 'Book', localize: false },
         { href: '/blog', label: 'Blog', description: 'Latest updates & guides', icon: 'Newspaper' },
-        { href: '/changelog', label: 'Changelog', description: 'New features & fixes', icon: 'FileClock' },
-    ]
-  },
-  { 
-    href: '/portfolio', 
-    label: 'Work',
-    children: [
-        { href: '/portfolio', label: 'All Projects', description: 'Our complete portfolio', icon: 'LayoutGrid' },
-        { href: '/design', label: 'Design System', description: 'Style guide & tokens', icon: 'Palette' },
-    ]
-  },
-  { 
-    href: '/about', 
-    label: 'Company',
-    children: [
-        { href: '/about', label: 'About', description: 'Our story & mission', icon: 'Building2' },
-        { href: '/contact', label: 'Contact', description: 'Get in touch with us', icon: 'Mail' },
     ]
   },
 ];

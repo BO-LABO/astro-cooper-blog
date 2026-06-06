@@ -29,6 +29,7 @@ import CTA from '~/components/sections/CTA.astro';
 import FAQ from '~/components/sections/FAQ.astro';
 import LogoCloud from '~/components/sections/LogoCloud.astro';
 import TechStack from '~/components/sections/TechStack.astro';
+import ThreeSteps from '~/components/sections/ThreeSteps.astro';
 import NewsletterSection from '~/components/sections/NewsletterSection.astro';
 
 export async function getStaticPaths() {
@@ -203,6 +204,8 @@ const homeFaqs = [
     </BentoGrid>
     </Section>
 
+    <ThreeSteps />
+
     <Section class="py-24">
         <div class="text-center max-w-3xl mx-auto mb-16">
             <h2 class="text-xl md:text-3xl font-bold mb-4">{t['benefits.title']}</h2>
@@ -227,6 +230,13 @@ const homeFaqs = [
         </div>
     </Section>
 
+    <LatestPosts count={6}/>
+
+    <NewsletterSection 
+        title="最新情報を受け取る" 
+        description="ASTRO攻略LABOの限定ツール情報や最新検証コンテンツをメールでお届けします。"
+    />
+
     <Section class="py-0 overflow-visible">
     <Stats>
         {stats.map((stat) => (
@@ -247,16 +257,9 @@ const homeFaqs = [
     </Testimonials>
     </Section>
 
-    <LatestPosts count={6}/>
-
     <Section class="py-0 overflow-visible">
     <FAQ items={homeFaqs} />
     </Section>
-
-    <NewsletterSection 
-        title="最新情報を受け取る" 
-        description="ASTRO攻略LABOの限定ツール情報や最新検証コンテンツをメールでお届けします。"
-    />
 
     <CTA 
         title={t['cta.readyToLaunch']}
