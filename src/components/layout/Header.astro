@@ -87,7 +87,7 @@ const primaryHref = ACTION_LINKS.primary.href.startsWith('/docs')
     {/* Mobile/Flyout Menu */}
     <div class="flex items-center gap-4 shrink-0">
       {siteConfig.search.enabled && (
-        <div class="hidden md:flex">
+        <div class="flex">
           <Search 
             client:only="react" 
             placeholder={t['search.placeholder']} 
@@ -95,8 +95,8 @@ const primaryHref = ACTION_LINKS.primary.href.startsWith('/docs')
           />
         </div>
       )}
-      <span class="hidden md:block"><LanguagePicker availableLangs={availableLangs} /></span>
-      <span class="hidden md:block"><ThemeToggle /></span>
+      <LanguagePicker availableLangs={availableLangs} />
+      <ThemeToggle />
       <a 
         href={ACTION_LINKS.social.github}
         target="_blank" 
