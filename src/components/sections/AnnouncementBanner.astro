@@ -12,17 +12,35 @@ const { message, link, linkText } = Astro.props;
   class="bg-primary text-white relative overflow-hidden"
   role="alert"
 >
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-center py-2 text-sm font-medium gap-2">
-      <span>{message}</span>
-      {link && (
-        <a 
-          href={link} 
-          class="underline decoration-white/50 hover:decoration-white transition-all underline-offset-4"
-        >
-          {linkText}
-        </a>
-      )}
+  <div class="flex items-center justify-between px-4 py-2 gap-3">
+    <div class="flex-1 overflow-hidden">
+      <div class="marquee-track whitespace-nowrap text-sm font-medium">
+        <span class="marquee-content">{message}&nbsp;&nbsp;&nbsp;{message}&nbsp;&nbsp;&nbsp;</span>
+      </div>
     </div>
+    {link && (
+      <a 
+        href={link} 
+        class="shrink-0 text-xs font-bold bg-white text-primary px-3 py-1 rounded-full hover:bg-white/90 transition-all whitespace-nowrap"
+      >
+        {linkText}
+      </a>
+    )}
   </div>
 </div>
+
+<style>
+  .marquee-track {
+    display: inline-block;
+    animation: marquee 18s linear infinite;
+  }
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  @media (min-width: 768px) {
+    .marquee-track {
+      animation: none;
+    }
+  }
+</style>
