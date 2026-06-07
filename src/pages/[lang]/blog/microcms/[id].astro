@@ -96,18 +96,6 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
       </a>
     </div>
 
-    <!-- アイキャッチ -->
-    {post.eyecatch && (
-      <div class="rounded-2xl overflow-hidden mb-8 border border-black/10 dark:border-white/10 shadow-xl">
-        <img src={post.eyecatch.url} alt={displayTitle} loading="eager" class="w-full object-cover aspect-video" />
-      </div>
-    )}
-
-    <!-- タイトル -->
-    <h1 class="text-2xl md:text-4xl font-bold mb-10 leading-tight text-zinc-900 dark:text-white">
-      {displayTitle}
-    </h1>
-
     <!-- 3カラムレイアウト -->
     <div class="flex gap-8 items-start">
 
@@ -139,6 +127,18 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
 
       <!-- 本文 -->
       <main class="min-w-0 flex-1">
+        <!-- アイキャッチ -->
+        {post.eyecatch && (
+          <div class="rounded-xl overflow-hidden mb-6 border border-black/10 dark:border-white/10 shadow-md">
+            <img src={post.eyecatch.url} alt={displayTitle} loading="eager" class="w-full object-cover aspect-video" />
+          </div>
+        )}
+
+        <!-- タイトル -->
+        <h1 class="text-xl md:text-2xl font-bold mb-8 leading-snug text-zinc-900 dark:text-white">
+          {displayTitle}
+        </h1>
+
         <div
           class="prose prose-base md:prose-lg max-w-none
             prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-white
