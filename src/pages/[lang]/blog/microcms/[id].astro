@@ -1,16 +1,16 @@
 ---
 export const prerender = true;
-import Layout from '~/layouts/Layout.astro';
-import ScrollProgress from '~/components/layout/ScrollProgress.astro';
-import { client } from '~/library/microcms';
-import { useTranslations } from '~/i18n/utils';
-import { languages } from '~/i18n/ui';
-import translate from 'translate';
+import Layout from "~/layouts/Layout.astro";
+import ScrollProgress from "~/components/layout/ScrollProgress.astro";
+import { client } from "~/library/microcms";
+import { useTranslations } from "~/i18n/utils";
+import { languages } from "~/i18n/ui";
+import translate from "translate";
 
-translate.engine = 'google';
+translate.engine = "google";
 
 export async function getStaticPaths() {
-  const response = await client.get({ endpoint: 'blogs' });
+  const response = await client.get({ endpoint: "blogs" });
   const posts = response.contents;
   return posts.flatMap((post: any) =>
     Object.keys(languages).map((lang) => ({
@@ -24,30 +24,25 @@ const { post, allPosts } = Astro.props;
 const { lang } = Astro.params;
 const t = useTranslations(lang);
 
-async function translateHtml(htmlText: string, targetLang: string) {
-  if (!htmlText) return '';
+async function translateHtml(html: string, to: string) {
+  if (!html) return "";
   try {
-    const placeholders: string[] = [];
-    let idx = 0;
-    const masked = htmlText.replace(/<[^>]+>/g, (m) => { placeholders.push(m); return ' [[' + (idx++) + ']] '; });
-    const translated = await translate(masked, { from: 'ja', to: targetLang });
-    return translated.replace(/\[\[([0-9]+)\]\]/g, (_: string, i: string) => placeholders[+i] || _);
-  } catch (e) {
-    console.error('Translation failed:', e);
-    return htmlText;
-  }
+    const ph: string[] = [];
+    let n = 0;
+    const masked = html.replace(/<[^>]+>/g, (m) => { ph.push(m); return " [[" + (n++) + "]] "; });
+    const tr = await translate(masked, { from: "ja", to });
+    return tr.replace(/\[\[([0-9]+)\]\]/g, (_: string, i: string) => ph[+i] || _);
+  } catch { return html; }
 }
 
 let displayTitle = post.title;
 let displayContent = post.content;
 
-if (lang === 'en') {
+if (lang === "en") {
   try {
-    displayTitle = await translate(post.title, { from: 'ja', to: 'en' });
-    displayContent = await translateHtml(post.content, 'en');
-  } catch (e) {
-    console.error('Translation error:', e);
-  }
+    displayTitle = await translate(post.title, { from: "ja", to: "en" });
+    displayContent = await translateHtml(post.content, "en");
+  } catch {}
 }
 
 function extractHeadings(html: string) {
@@ -55,19 +50,20 @@ function extractHeadings(html: string) {
   const re = /<h([23])[^>]*>(.*?)<\/h[23]>/gi;
   let m; let n = 0;
   while ((m = re.exec(html)) !== null) {
-    const text = m[2].replace(/<[^>]+>/g, '');
-    const id = 'h-' + (n++);
-    result.push({ id, text, level: +m[1] });
+    result.push({ id: "toc-" + (n++), text: m[2].replace(/<[^>]+>/g, ""), level: +m[1] });
   }
   return result;
 }
 
-function addIds(html: string, headings: { id: string }[]) {
+function addIds(html: string, hs: { id: string }[]) {
   let i = 0;
-  return html.replace(/<h([23])([^>]*)>(.*?)<\/h[23]>/gi, (_: string, lv: string, attrs: string, inner: string) => {
-    const h = headings[i++];
-    return h ? '<h' + lv + attrs + ' id="' + h.id + '">' + inner + '</h' + lv + '>' : _;
-  });
+  return html.replace(/<h([23])([^>]*)>(.*?)<\/h[23]>/gi,
+    (_: string, lv: string, attrs: string, inner: string) => {
+      const h = hs[i++];
+      if (!h) return _;
+      const clean = attrs.replace(/\s*id="[^"]*"/g, "");
+      return "<h" + lv + clean + " id=\"" + h.id + "\">" + inner + "</h" + lv + ">";
+    });
 }
 
 const headings = extractHeadings(displayContent);
@@ -100,7 +96,7 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
                   <a href={"/" + lang + "/blog/microcms/" + p.id}
                      class={isActive
                        ? "block text-xs leading-snug py-1.5 px-2 rounded-lg bg-primary/10 text-primary font-semibold"
-                       : "block text-xs leading-snug py-1.5 px-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-white/5"}>
+                       : "block text-xs leading-snug py-1.5 px-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"}>
                     {p.title}
                   </a>
                 </li>
@@ -116,6 +112,9 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
             <p class="text-[11px] text-primary font-medium mt-2">続きを読む →</p>
           </div>
         </a>
+      </aside>
+
+      <!-- 本文 -->
       <main class="min-w-0 flex-1">
         {post.eyecatch && (
           <div class="rounded-xl overflow-hidden mb-6 border border-black/10 dark:border-white/10 shadow-md">
@@ -125,25 +124,27 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
         <h1 class="text-xl md:text-2xl font-bold mb-8 leading-snug text-zinc-900 dark:text-white">
           {displayTitle}
         </h1>
-        <div class="prose prose-base md:prose-lg max-w-none prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-white prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-gray-200 dark:prose-h2:border-white/10 prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed prose-li:text-gray-700 dark:prose-li:text-gray-300 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-zinc-900 dark:prose-strong:text-white prose-img:rounded-xl prose-img:shadow-lg dark:prose-invert" set:html={displayContent} />
+        <div class="article-body" set:html={displayContent} />
 
         <div class="mt-16 rounded-2xl bg-gradient-to-br from-primary/10 via-blue-500/5 to-transparent border border-primary/20 p-8 text-center">
           <p class="text-xs font-bold uppercase tracking-widest text-primary mb-2">🎁 当サイト限定特典</p>
           <h3 class="text-xl font-bold mb-3 text-zinc-900 dark:text-white">ASTROサインツール完全版を無料で手に入れる</h3>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">当サイト経由でASTROに口座開設するだけで、22種類以上の指標搭載ツールと高勝率プリセットを完全無料でプレゼント。</p>
-          <a href="https://astro.space/ja/" class="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
+          <a href="https://astro.space/ja/" class="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary/90 transition-all shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5">
             今すぐ無料で口座開設する →
           </a>
         </div>
 
         {otherPosts.length > 0 && (
           <div class="mt-12">
-            <h2 class="text-lg font-bold mb-4 text-zinc-900 dark:text-white">関連記事</h2>
+            <h2 class="text-lg font-bold mb-4 text-zinc-900 dark:text-white border-b border-gray-200 dark:border-white/10 pb-2">関連記事</h2>
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {otherPosts.map((p: any) => (
-                <a href={"/" + lang + "/blog/microcms/" + p.id} class="group block rounded-xl border border-gray-200 dark:border-white/10 overflow-hidden hover:border-primary/40 transition-colors">
+                <a href={"/" + lang + "/blog/microcms/" + p.id} class="group block rounded-xl border border-gray-200 dark:border-white/10 overflow-hidden hover:border-primary/40 hover:shadow-lg transition-all">
                   {p.eyecatch && (
-                    <img src={p.eyecatch.url} alt={p.title} class="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div class="overflow-hidden aspect-video">
+                      <img src={p.eyecatch.url} alt={p.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    </div>
                   )}
                   <div class="p-4">
                     <p class="text-sm font-semibold text-zinc-900 dark:text-white line-clamp-2 group-hover:text-primary transition-colors">{p.title}</p>
@@ -166,9 +167,9 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
                   <a href={"#" + h.id}
                      data-toc-id={h.id}
                      class={h.level === 3
-                       ? "toc-link flex items-start gap-2 text-xs leading-snug py-1.5 px-2 pl-4 rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary/5 text-gray-500 dark:text-gray-400"
-                       : "toc-link flex items-start gap-2 text-xs leading-snug py-1.5 px-2 rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary/5 text-gray-500 dark:text-gray-400"}>
-                    <span class="toc-bar mt-1.5 shrink-0 w-0.5 h-2.5 rounded-full bg-transparent transition-all duration-200"></span>
+                       ? "toc-link flex items-start gap-1.5 text-xs leading-snug py-1.5 px-2 pl-5 rounded-lg transition-all duration-200 text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-primary/5"
+                       : "toc-link flex items-start gap-1.5 text-xs leading-snug py-1.5 px-2 rounded-lg transition-all duration-200 text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-primary/5"}>
+                    <span class="toc-bar mt-1.5 shrink-0 w-0.5 h-2.5 rounded-full transition-all duration-200" style="background:transparent"></span>
                     <span>{h.text}</span>
                   </a>
                 </li>
@@ -176,7 +177,7 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
             </ul>
           </div>
         )}
-        <div class="relative rounded-xl p-[1px] bg-gradient-to-br from-purple-500 via-blue-500 to-purple-500/30">
+        <div class="relative rounded-xl p-px bg-gradient-to-br from-purple-500 via-blue-500 to-purple-500/30">
           <div class="rounded-xl bg-gray-50 dark:bg-zinc-900 p-4">
             <p class="text-[10px] font-bold tracking-widest uppercase text-purple-500 mb-1">🔧 近日公開</p>
             <p class="text-sm font-bold text-zinc-900 dark:text-white leading-snug mb-1">限定サインツール</p>
@@ -186,40 +187,52 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
             </a>
           </div>
         </div>
+      </aside>
 
     </div>
   </div>
 
-  <script>
-    const headingEls = Array.from(document.querySelectorAll("main h2[id], main h3[id]"));
-    const tocLinks = Array.from(document.querySelectorAll("a[data-toc-id]"));
+  <script is:inline>
+  (function() {
+    function initToc() {
+      var headingEls = Array.from(document.querySelectorAll("main h2[id], main h3[id]"));
+      var tocLinks = Array.from(document.querySelectorAll("a[data-toc-id]"));
+      if (!headingEls.length || !tocLinks.length) return;
 
-    function setActive(id) {
-      tocLinks.forEach((link) => {
-        const bar = link.querySelector(".toc-bar");
-        if (link.dataset.tocId === id) {
-          link.classList.add("text-primary", "font-semibold", "bg-primary/5");
-          link.classList.remove("text-gray-500");
-          if (bar) bar.style.backgroundColor = "#2563EB";
-        } else {
-          link.classList.remove("text-primary", "font-semibold", "bg-primary/5");
-          link.classList.add("text-gray-500");
-          if (bar) bar.style.backgroundColor = "transparent";
-        }
-      });
-    }
-
-    function onScroll() {
-      const scrollY = window.scrollY + 140;
-      let current = headingEls.length > 0 ? headingEls[0].id : "";
-      for (const el of headingEls) {
-        if (el.offsetTop <= scrollY) current = el.id;
-        else break;
+      function setActive(id) {
+        tocLinks.forEach(function(link) {
+          var bar = link.querySelector(".toc-bar");
+          if (link.dataset.tocId === id) {
+            link.classList.add("text-primary", "font-semibold", "bg-primary/5");
+            link.classList.remove("text-gray-500");
+            if (bar) bar.style.background = "#2563EB";
+          } else {
+            link.classList.remove("text-primary", "font-semibold", "bg-primary/5");
+            link.classList.add("text-gray-500");
+            if (bar) bar.style.background = "transparent";
+          }
+        });
       }
-      if (current) setActive(current);
+
+      function onScroll() {
+        var y = window.scrollY + 140;
+        var cur = headingEls[0].id;
+        for (var i = 0; i < headingEls.length; i++) {
+          if (headingEls[i].offsetTop <= y) cur = headingEls[i].id;
+          else break;
+        }
+        setActive(cur);
+      }
+
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
     }
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initToc);
+    } else {
+      initToc();
+    }
+  })();
   </script>
 </Layout>
