@@ -45,7 +45,7 @@ const displayPosts = await Promise.all(
 );
 ---
 
-<Layout title="Blog" description="最新記事一覧">
+<Layout title="Blog" description={t['blog.microcms.desc']}>
   <PageHeader title={t['blog.hero.title']} description={t['blog.hero.subtitle']} />
 
   <Container as="section" class="pb-24">
