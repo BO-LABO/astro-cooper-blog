@@ -21,22 +21,14 @@ const t = useTranslations(lang);
         </div>
 
         <div class="mt-4 w-full">
-          <div id="newsletter-title" class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{t['footer.newsletter.title']}</div>
-          <form class="flex gap-2 max-w-sm w-full">
-            <label for="newsletter-email-footer" class="sr-only">Email address</label>
-            <input 
-              id="newsletter-email-footer"
-              type="email" 
-              placeholder={t['footer.newsletter.placeholder']}
-              aria-label={t['footer.newsletter.placeholder']}
-              aria-labelledby="newsletter-title"
-              title={t['footer.newsletter.placeholder']}
-              class="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-white/10 rounded-full px-4 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-gray-500 dark:placeholder:text-gray-400 text-gray-900 dark:text-white"
-            />
-            <button type="submit" class="bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-full px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap">
-              {t['footer.newsletter.button']}
-            </button>
-          </form>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">自己資金ゼロでASTROを始める方法を解説中</p>
+          <a href="/ja/blog/microcms/3l44u_69rza4" class="group flex items-center gap-3 max-w-sm w-full bg-gradient-to-br from-primary/10 to-blue-500/5 border border-primary/20 rounded-xl p-3 hover:border-primary/50 hover:from-primary/15 transition-all">
+            <div class="shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-lg">📈</div>
+            <div class="min-w-0">
+              <p class="text-xs font-bold text-zinc-900 dark:text-white leading-snug line-clamp-2">【無料で始める】ポイ活でASTROの軍資金を作る完全ガイド</p>
+              <p class="text-[11px] text-primary font-medium mt-0.5 group-hover:underline">記事を読む →</p>
+            </div>
+          </a>
         </div>
       </div>
       
