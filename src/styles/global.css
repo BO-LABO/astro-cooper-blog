@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant navy (&:where(.navy, .navy *));
 
 @theme {
   --color-primary: #2563EB;
