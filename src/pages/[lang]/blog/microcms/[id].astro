@@ -34,9 +34,8 @@ async function translateHtml(htmlText: string, targetLang: string) {
       return ` [[${placeholderIndex++}]] `;
     });
     const translatedMasked = await translate(maskedHtml, { from: 'ja', to: targetLang });
-    const finalHtml = translatedMasked.replace(/\[\[(\d+)\]\]/g, (match, indexStr) => {
-      const index = parseInt(indexStr, 10);
-      return placeholders[index] || match;
+    const finalHtml = translatedMasked.replace(/\[\[(\d+)\]\]/g, (_match: string, indexStr: string) => {
+      return placeholders[parseInt(indexStr, 10)] || _match;
     });
     return finalHtml;
   } catch (error) {
@@ -53,11 +52,10 @@ if (lang === 'en') {
     displayTitle = await translate(post.title, { from: 'ja', to: 'en' });
     displayContent = await translateHtml(post.content, 'en');
   } catch (e) {
-    console.error("Translation run error:", e);
+    console.error('Translation run error:', e);
   }
 }
 
-// 目次生成
 function extractHeadings(html: string) {
   const headings: { id: string; text: string; level: number }[] = [];
   const regex = /<h([23])[^>]*>(.*?)<\/h[23]>/gi;
@@ -65,31 +63,31 @@ function extractHeadings(html: string) {
   while ((match = regex.exec(html)) !== null) {
     const level = parseInt(match[1]);
     const text = match[2].replace(/<[^>]+>/g, '');
-    const id = text.replace(/\s+/g, '-').replace(/[^\w\-]/g, '').toLowerCase();
+    const id = text.replace(/\s+/g, '-').replace(/[^\w\u3040-\u9fff\-]/g, '').toLowerCase() || 'heading-' + headings.length;
     headings.push({ id, text, level });
   }
   return headings;
 }
 
-// 本文にidを付与
-function addHeadingIds(html: string) {
-  return html.replace(/<h([23])([^>]*)>(.*?)<\/h[23]>/gi, (match, level, attrs, text) => {
-    const cleanText = text.replace(/<[^>]+>/g, '');
-    const id = cleanText.replace(/\s+/g, '-').replace(/[^\w\-]/g, '').toLowerCase();
-    return `<h${level}${attrs} id="${id}">${text}</h${level}>`;
+function addHeadingIds(html: string, headings: { id: string; text: string; level: number }[]) {
+  let i = 0;
+  return html.replace(/<h([23])([^>]*)>(.*?)<\/h[23]>/gi, (_match, level, attrs) => {
+    const h = headings[i++];
+    if (!h) return _match;
+    return `<h${level}${attrs} id="${h.id}">${h.text}</h${level}>`;
   });
 }
 
 const headings = extractHeadings(displayContent);
-displayContent = addHeadingIds(displayContent);
-
-const otherPosts = allPosts.filter((p: any) => p.id !== post.id).slice(0, 3);
+displayContent = addHeadingIds(displayContent, headings);
+const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slice(0, 3);
 ---
 
 <Layout title={displayTitle} description={displayTitle} image={post.eyecatch?.url} imageAlt={displayTitle} article={true}>
   <ScrollProgress />
-  
+
   <div class="max-w-7xl mx-auto px-4 pt-32 pb-20">
+
     <!-- 戻るリンク -->
     <div class="mb-6">
       <a href={`/${lang}/blog/microcms`} class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
@@ -106,7 +104,7 @@ const otherPosts = allPosts.filter((p: any) => p.id !== post.id).slice(0, 3);
     )}
 
     <!-- タイトル -->
-    <h1 class="text-2xl md:text-4xl font-bold mb-8 leading-tight text-zinc-900 dark:text-white">
+    <h1 class="text-2xl md:text-4xl font-bold mb-10 leading-tight text-zinc-900 dark:text-white">
       {displayTitle}
     </h1>
 
@@ -114,15 +112,15 @@ const otherPosts = allPosts.filter((p: any) => p.id !== post.id).slice(0, 3);
     <div class="flex gap-8 items-start">
 
       <!-- 左サイドバー：記事一覧 -->
-      <aside class="hidden xl:block w-56 shrink-0 sticky top-24">
+      <aside class="hidden xl:block w-52 shrink-0 sticky top-24 space-y-4">
         <div class="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4">
           <p class="text-xs font-bold uppercase tracking-widest text-primary mb-3">攻略ブログ</p>
-          <ul class="space-y-2">
-            {allPosts.map((p: any) => (
+          <ul class="space-y-1">
+            {(allPosts as any[]).map((p: any) => (
               <li>
                 
                   href={`/${lang}/blog/microcms/${p.id}`}
-                  class={`block text-sm leading-snug py-1.5 px-2 rounded-lg transition-colors ${p.id === post.id ? 'bg-primary/10 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-white/5'}`}
+                  class={`block text-xs leading-snug py-1.5 px-2 rounded-lg transition-colors ${p.id === post.id ? 'bg-primary/10 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-white/5'}`}
                 >
                   {p.title}
                 </a>
@@ -130,9 +128,7 @@ const otherPosts = allPosts.filter((p: any) => p.id !== post.id).slice(0, 3);
             ))}
           </ul>
         </div>
-
-        <!-- CTAバナー左 -->
-        <div class="mt-4 bg-gradient-to-br from-primary to-blue-600 rounded-xl p-4 text-white">
+        <div class="bg-gradient-to-br from-primary to-blue-600 rounded-xl p-4 text-white">
           <p class="text-xs font-bold mb-1">🎁 限定特典</p>
           <p class="text-sm font-semibold mb-3">ツール完全版を無料解放中</p>
           <a href="https://astro.space/ja/" class="block text-center bg-white text-primary text-xs font-bold py-2 px-3 rounded-lg hover:bg-white/90 transition-colors">
@@ -143,16 +139,17 @@ const otherPosts = allPosts.filter((p: any) => p.id !== post.id).slice(0, 3);
 
       <!-- 本文 -->
       <main class="min-w-0 flex-1">
-        <div class="prose prose-base md:prose-lg mx-auto max-w-none
-          prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-white
-          prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-gray-200 dark:prose-h2:border-white/10
-          prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3
-          prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed
-          prose-li:text-gray-700 dark:prose-li:text-gray-300
-          prose-a:text-primary hover:prose-a:text-primary/80 prose-a:no-underline hover:prose-a:underline
-          prose-strong:text-zinc-900 dark:prose-strong:text-white
-          prose-img:rounded-xl prose-img:shadow-lg
-          dark:prose-invert"
+        <div
+          class="prose prose-base md:prose-lg max-w-none
+            prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-white
+            prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-gray-200 dark:prose-h2:border-white/10
+            prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3
+            prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed
+            prose-li:text-gray-700 dark:prose-li:text-gray-300
+            prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+            prose-strong:text-zinc-900 dark:prose-strong:text-white
+            prose-img:rounded-xl prose-img:shadow-lg
+            dark:prose-invert"
           set:html={displayContent}
         />
 
@@ -161,7 +158,7 @@ const otherPosts = allPosts.filter((p: any) => p.id !== post.id).slice(0, 3);
           <p class="text-xs font-bold uppercase tracking-widest text-primary mb-2">🎁 当サイト限定特典</p>
           <h3 class="text-xl font-bold mb-3 text-zinc-900 dark:text-white">ASTROサインツール完全版を無料で手に入れる</h3>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">当サイト経由でASTROに口座開設するだけで、22種類以上の指標搭載ツールと高勝率プリセットを完全無料でプレゼント。</p>
-          <a href="https://astro.space/ja/" class="inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
+          <a href="https://astro.space/ja/" class="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
             今すぐ無料で口座開設する →
           </a>
         </div>
@@ -187,20 +184,19 @@ const otherPosts = allPosts.filter((p: any) => p.id !== post.id).slice(0, 3);
       </main>
 
       <!-- 右サイドバー：目次＋CTA -->
-      <aside class="hidden lg:block w-56 shrink-0 sticky top-24">
-        <!-- 目次 -->
+      <aside class="hidden lg:block w-52 shrink-0 sticky top-24 space-y-4">
         {headings.length > 0 && (
-          <div class="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4 mb-4">
+          <div class="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4">
             <p class="text-xs font-bold uppercase tracking-widest text-primary mb-3">目次</p>
             <ul class="space-y-0.5" id="toc-list">
-              {headings.map((h, i) => (
+              {headings.map((h) => (
                 <li>
                   
                     href={`#${h.id}`}
                     data-toc-id={h.id}
-                    class={`toc-link flex items-start gap-2 text-xs leading-snug py-1.5 px-2 rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary/5 text-gray-500 dark:text-gray-400 ${h.level === 3 ? 'pl-5' : ''}`}
+                    class={`toc-link flex items-start gap-2 text-xs leading-snug py-1.5 px-2 rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary/5 text-gray-500 dark:text-gray-400 ${h.level === 3 ? 'pl-4' : ''}`}
                   >
-                    <span class="toc-bar mt-1 shrink-0 w-0.5 h-3 rounded-full bg-transparent transition-all duration-200"></span>
+                    <span class="toc-bar mt-1.5 shrink-0 w-0.5 h-2.5 rounded-full bg-transparent transition-all duration-200"></span>
                     <span>{h.text}</span>
                   </a>
                 </li>
@@ -208,8 +204,6 @@ const otherPosts = allPosts.filter((p: any) => p.id !== post.id).slice(0, 3);
             </ul>
           </div>
         )}
-
-        <!-- 右CTAバナー -->
         <div class="bg-gradient-to-br from-primary to-blue-600 rounded-xl p-4 text-white">
           <p class="text-xs font-bold mb-1">🎁 限定特典</p>
           <p class="text-sm font-semibold mb-3">ツール完全版を無料解放中</p>
@@ -223,30 +217,29 @@ const otherPosts = allPosts.filter((p: any) => p.id !== post.id).slice(0, 3);
   </div>
 
   <script>
-    const headingEls = Array.from(document.querySelectorAll('h2[id], h3[id]'));
-    const tocLinks = Array.from(document.querySelectorAll('a[data-toc-id]'));
+    const headingEls = Array.from(document.querySelectorAll('main h2[id], main h3[id]')) as HTMLElement[];
+    const tocLinks = Array.from(document.querySelectorAll('a[data-toc-id]')) as HTMLAnchorElement[];
 
-    function setActive(id) {
+    function setActive(id: string) {
       tocLinks.forEach((link) => {
-        const bar = link.querySelector('.toc-bar');
-        if (link.dataset.tocId === id) {
+        const bar = link.querySelector('.toc-bar') as HTMLElement | null;
+        if ((link as any).dataset.tocId === id) {
           link.classList.add('text-primary', 'font-semibold', 'bg-primary/5');
-          link.classList.remove('text-gray-500', 'dark:text-gray-400');
-          if (bar) { bar.classList.add('bg-primary'); bar.classList.remove('bg-transparent'); }
+          link.classList.remove('text-gray-500');
+          if (bar) bar.style.backgroundColor = 'var(--color-primary, #f97316)';
         } else {
           link.classList.remove('text-primary', 'font-semibold', 'bg-primary/5');
-          link.classList.add('text-gray-500', 'dark:text-gray-400');
-          if (bar) { bar.classList.remove('bg-primary'); bar.classList.add('bg-transparent'); }
+          link.classList.add('text-gray-500');
+          if (bar) bar.style.backgroundColor = 'transparent';
         }
       });
     }
 
-    // スクロール位置から最も近い見出しを特定
     function onScroll() {
-      const scrollY = window.scrollY + 120;
-      let current = headingEls[0]?.id || '';
+      const scrollY = window.scrollY + 140;
+      let current = headingEls[0]?.id ?? '';
       for (const el of headingEls) {
-        if (el.offsetTop <= scrollY) current = el.id;
+        if ((el as HTMLElement).offsetTop <= scrollY) current = el.id;
         else break;
       }
       if (current) setActive(current);
