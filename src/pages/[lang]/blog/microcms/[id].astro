@@ -3,7 +3,7 @@ export const prerender = true;
 import Layout from '~/layouts/Layout.astro';
 import ScrollProgress from '~/components/layout/ScrollProgress.astro';
 import { client } from '~/library/microcms';
-import { isRtl } from '~/i18n/utils';
+import { isRtl, useTranslations } from '~/i18n/utils';
 import { languages } from '~/i18n/ui';
 import translate from 'translate';
 
@@ -24,6 +24,7 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { lang } = Astro.params;
+const t = useTranslations(lang);
 
 // HTMLタグを壊さずに安全にGoogle翻訳する関数
 async function translateHtml(htmlText: string, targetLang: string) {
@@ -75,7 +76,7 @@ if (lang === 'en') {
     <div class="mb-8">
       <a href={`/${lang}/blog/microcms`} class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class={`w-4 h-4 ${isRtl(lang) ? 'rotate-180' : ''}`}><path d="m15 18-6-6 6-6"/></svg>
-        {t['blog.read.more'] ? (lang === 'ja' ? 'ブログに戻る' : 'Back to Blog') : 'Back to Blog'}
+        {t['blog.back']}
       </a>
     </div>
 
