@@ -5,6 +5,7 @@ import PageHeader from '~/components/layout/PageHeader.astro';
 import Container from '~/components/ui/Container.astro';
 import Card from '~/components/ui/Card.astro';
 import { client } from '~/library/microcms';
+import { useTranslations } from '~/i18n/utils';
 
 export async function getStaticPaths() {
   return [
@@ -16,10 +17,11 @@ export async function getStaticPaths() {
 const response = await client.get({ endpoint: 'blogs' });
 const posts = response.contents;
 const { lang } = Astro.params;
+const t = useTranslations(lang);
 ---
 
-<Layout title="Blog" description="Blog">
-  <PageHeader title="Blog" {t['blog.microcms.desc']} />
+<Layout title="Blog" description={t['blog.microcms.desc']}>
+  <PageHeader title="Blog" description={t['blog.microcms.desc']} />
 
   <Container as="section" class="pb-24">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
