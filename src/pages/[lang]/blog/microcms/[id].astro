@@ -3,7 +3,7 @@ export const prerender = true;
 import Layout from '~/layouts/Layout.astro';
 import ScrollProgress from '~/components/layout/ScrollProgress.astro';
 import { client } from '~/library/microcms';
-import { isRtl, useTranslations } from '~/i18n/utils';
+import { useTranslations } from '~/i18n/utils';
 import { languages } from '~/i18n/ui';
 import translate from 'translate';
 
@@ -28,18 +28,12 @@ async function translateHtml(htmlText: string, targetLang: string) {
   if (!htmlText) return '';
   try {
     const placeholders: string[] = [];
-    let placeholderIndex = 0;
-    const maskedHtml = htmlText.replace(/<[^>]+>/g, (match) => {
-      placeholders.push(match);
-      return ` [[${placeholderIndex++}]] `;
-    });
-    const translatedMasked = await translate(maskedHtml, { from: 'ja', to: targetLang });
-    const finalHtml = translatedMasked.replace(/\[\[(\d+)\]\]/g, (_match: string, indexStr: string) => {
-      return placeholders[parseInt(indexStr, 10)] || _match;
-    });
-    return finalHtml;
-  } catch (error) {
-    console.error('Google translation failed:', error);
+    let idx = 0;
+    const masked = htmlText.replace(/<[^>]+>/g, (m) => { placeholders.push(m); return ' [[' + (idx++) + ']] '; });
+    const translated = await translate(masked, { from: 'ja', to: targetLang });
+    return translated.replace(/\[\[([0-9]+)\]\]/g, (_: string, i: string) => placeholders[+i] || _);
+  } catch (e) {
+    console.error('Translation failed:', e);
     return htmlText;
   }
 }
@@ -52,68 +46,66 @@ if (lang === 'en') {
     displayTitle = await translate(post.title, { from: 'ja', to: 'en' });
     displayContent = await translateHtml(post.content, 'en');
   } catch (e) {
-    console.error('Translation run error:', e);
+    console.error('Translation error:', e);
   }
 }
 
 function extractHeadings(html: string) {
-  const headings: { id: string; text: string; level: number }[] = [];
-  const regex = /<h([23])[^>]*>(.*?)<\/h[23]>/gi;
-  let match;
-  while ((match = regex.exec(html)) !== null) {
-    const level = parseInt(match[1]);
-    const text = match[2].replace(/<[^>]+>/g, '');
-    const id = text.replace(/\s+/g, '-').replace(/[^\w\u3040-\u9fff\-]/g, '').toLowerCase() || 'heading-' + headings.length;
-    headings.push({ id, text, level });
+  const result: { id: string; text: string; level: number }[] = [];
+  const re = /<h([23])[^>]*>(.*?)<\/h[23]>/gi;
+  let m; let n = 0;
+  while ((m = re.exec(html)) !== null) {
+    const text = m[2].replace(/<[^>]+>/g, '');
+    const id = 'h-' + (n++);
+    result.push({ id, text, level: +m[1] });
   }
-  return headings;
+  return result;
 }
 
-function addHeadingIds(html: string, headings: { id: string; text: string; level: number }[]) {
+function addIds(html: string, headings: { id: string }[]) {
   let i = 0;
-  return html.replace(/<h([23])([^>]*)>(.*?)<\/h[23]>/gi, (_match, level, attrs) => {
+  return html.replace(/<h([23])([^>]*)>(.*?)<\/h[23]>/gi, (_: string, lv: string, attrs: string, inner: string) => {
     const h = headings[i++];
-    if (!h) return _match;
-    return `<h${level}${attrs} id="${h.id}">${h.text}</h${level}>`;
+    return h ? '<h' + lv + attrs + ' id="' + h.id + '">' + inner + '</h' + lv + '>' : _;
   });
 }
 
 const headings = extractHeadings(displayContent);
-displayContent = addHeadingIds(displayContent, headings);
+displayContent = addIds(displayContent, headings);
 const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slice(0, 3);
 ---
 
 <Layout title={displayTitle} description={displayTitle} image={post.eyecatch?.url} imageAlt={displayTitle} article={true}>
   <ScrollProgress />
-
   <div class="max-w-7xl mx-auto px-4 pt-32 pb-20">
 
-    <!-- 戻るリンク -->
     <div class="mb-6">
-      <a href={`/${lang}/blog/microcms`} class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+      <a href={"/" + lang + "/blog/microcms"} class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        {t['blog.back']}
+        {t["blog.back"]}
       </a>
     </div>
 
-    <!-- 3カラムレイアウト -->
     <div class="flex gap-8 items-start">
 
-      <!-- 左サイドバー：記事一覧 -->
+      <!-- 左サイドバー -->
       <aside class="hidden xl:block w-52 shrink-0 sticky top-24 space-y-4">
         <div class="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4">
           <p class="text-xs font-bold uppercase tracking-widest text-primary mb-3">攻略ブログ</p>
           <ul class="space-y-1">
-            {(allPosts as any[]).map((p: any) => (
-              <li>
-                
-                  href={`/${lang}/blog/microcms/${p.id}`}
-                  class={"block text-xs leading-snug py-1.5 px-2 rounded-lg transition-colors " + (p.id === post.id ? "bg-primary/10 text-primary font-semibold" : "text-gray-600 dark:text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-white/5")}
-                >
-                  {p.title}
-                </a>
-              </li>
-            ))}
+            {(allPosts as any[]).map((p: any) => {
+              const isActive = p.id === post.id;
+              return (
+                <li>
+                  <a href={"/" + lang + "/blog/microcms/" + p.id}
+                     class={isActive
+                       ? "block text-xs leading-snug py-1.5 px-2 rounded-lg bg-primary/10 text-primary font-semibold"
+                       : "block text-xs leading-snug py-1.5 px-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-white/5"}>
+                    {p.title}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         </div>
         <div class="bg-gradient-to-br from-primary to-blue-600 rounded-xl p-4 text-white">
@@ -127,33 +119,16 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
 
       <!-- 本文 -->
       <main class="min-w-0 flex-1">
-        <!-- アイキャッチ -->
         {post.eyecatch && (
           <div class="rounded-xl overflow-hidden mb-6 border border-black/10 dark:border-white/10 shadow-md">
             <img src={post.eyecatch.url} alt={displayTitle} loading="eager" class="w-full object-cover aspect-video" />
           </div>
         )}
-
-        <!-- タイトル -->
         <h1 class="text-xl md:text-2xl font-bold mb-8 leading-snug text-zinc-900 dark:text-white">
           {displayTitle}
         </h1>
+        <div class="prose prose-base md:prose-lg max-w-none prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-white prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-gray-200 dark:prose-h2:border-white/10 prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed prose-li:text-gray-700 dark:prose-li:text-gray-300 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-zinc-900 dark:prose-strong:text-white prose-img:rounded-xl prose-img:shadow-lg dark:prose-invert" set:html={displayContent} />
 
-        <div
-          class="prose prose-base md:prose-lg max-w-none
-            prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-white
-            prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-gray-200 dark:prose-h2:border-white/10
-            prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3
-            prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed
-            prose-li:text-gray-700 dark:prose-li:text-gray-300
-            prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-            prose-strong:text-zinc-900 dark:prose-strong:text-white
-            prose-img:rounded-xl prose-img:shadow-lg
-            dark:prose-invert"
-          set:html={displayContent}
-        />
-
-        <!-- 記事下CTA -->
         <div class="mt-16 rounded-2xl bg-gradient-to-br from-primary/10 via-blue-500/5 to-transparent border border-primary/20 p-8 text-center">
           <p class="text-xs font-bold uppercase tracking-widest text-primary mb-2">🎁 当サイト限定特典</p>
           <h3 class="text-xl font-bold mb-3 text-zinc-900 dark:text-white">ASTROサインツール完全版を無料で手に入れる</h3>
@@ -163,13 +138,12 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
           </a>
         </div>
 
-        <!-- 関連記事 -->
         {otherPosts.length > 0 && (
           <div class="mt-12">
             <h2 class="text-lg font-bold mb-4 text-zinc-900 dark:text-white">関連記事</h2>
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {otherPosts.map((p: any) => (
-                <a href={`/${lang}/blog/microcms/${p.id}`} class="group block rounded-xl border border-gray-200 dark:border-white/10 overflow-hidden hover:border-primary/40 transition-colors">
+                <a href={"/" + lang + "/blog/microcms/" + p.id} class="group block rounded-xl border border-gray-200 dark:border-white/10 overflow-hidden hover:border-primary/40 transition-colors">
                   {p.eyecatch && (
                     <img src={p.eyecatch.url} alt={p.title} class="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300" />
                   )}
@@ -183,7 +157,7 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
         )}
       </main>
 
-      <!-- 右サイドバー：目次＋CTA -->
+      <!-- 右サイドバー -->
       <aside class="hidden lg:block w-52 shrink-0 sticky top-24 space-y-4">
         {headings.length > 0 && (
           <div class="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4">
@@ -191,11 +165,11 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
             <ul class="space-y-0.5" id="toc-list">
               {headings.map((h) => (
                 <li>
-                  
-                    href={"#" + h.id}
-                    data-toc-id={h.id}
-                    class={"toc-link flex items-start gap-2 text-xs leading-snug py-1.5 px-2 rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary/5 text-gray-500 dark:text-gray-400" + (h.level === 3 ? " pl-4" : "")}
-                  >
+                  <a href={"#" + h.id}
+                     data-toc-id={h.id}
+                     class={h.level === 3
+                       ? "toc-link flex items-start gap-2 text-xs leading-snug py-1.5 px-2 pl-4 rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary/5 text-gray-500 dark:text-gray-400"
+                       : "toc-link flex items-start gap-2 text-xs leading-snug py-1.5 px-2 rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary/5 text-gray-500 dark:text-gray-400"}>
                     <span class="toc-bar mt-1.5 shrink-0 w-0.5 h-2.5 rounded-full bg-transparent transition-all duration-200"></span>
                     <span>{h.text}</span>
                   </a>
@@ -217,35 +191,35 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
   </div>
 
   <script>
-    const headingEls = Array.from(document.querySelectorAll('main h2[id], main h3[id]')) as HTMLElement[];
-    const tocLinks = Array.from(document.querySelectorAll('a[data-toc-id]')) as HTMLAnchorElement[];
+    const headingEls = Array.from(document.querySelectorAll("main h2[id], main h3[id]"));
+    const tocLinks = Array.from(document.querySelectorAll("a[data-toc-id]"));
 
-    function setActive(id: string) {
+    function setActive(id) {
       tocLinks.forEach((link) => {
-        const bar = link.querySelector('.toc-bar') as HTMLElement | null;
-        if ((link as any).dataset.tocId === id) {
-          link.classList.add('text-primary', 'font-semibold', 'bg-primary/5');
-          link.classList.remove('text-gray-500');
-          if (bar) bar.style.backgroundColor = '#2563EB';
+        const bar = link.querySelector(".toc-bar");
+        if (link.dataset.tocId === id) {
+          link.classList.add("text-primary", "font-semibold", "bg-primary/5");
+          link.classList.remove("text-gray-500");
+          if (bar) bar.style.backgroundColor = "#2563EB";
         } else {
-          link.classList.remove('text-primary', 'font-semibold', 'bg-primary/5');
-          link.classList.add('text-gray-500');
-          if (bar) bar.style.backgroundColor = 'transparent';
+          link.classList.remove("text-primary", "font-semibold", "bg-primary/5");
+          link.classList.add("text-gray-500");
+          if (bar) bar.style.backgroundColor = "transparent";
         }
       });
     }
 
     function onScroll() {
       const scrollY = window.scrollY + 140;
-      let current = headingEls[0]?.id ?? '';
+      let current = headingEls[0]?.id ?? "";
       for (const el of headingEls) {
-        if ((el as HTMLElement).offsetTop <= scrollY) current = el.id;
+        if (el.offsetTop <= scrollY) current = el.id;
         else break;
       }
       if (current) setActive(current);
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
   </script>
 </Layout>
