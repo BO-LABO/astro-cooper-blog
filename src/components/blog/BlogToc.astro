@@ -18,7 +18,7 @@ const { headings } = Astro.props;
           {headings.map((h) => (
             <li>
               
-                href={`#${h.id}`}
+                href={"#" + h.id}
                 data-toc-id={h.id}
                 class={h.level === 3
                   ? "toc-link flex items-start gap-1.5 text-xs leading-snug py-1.5 px-2 pl-5 rounded-lg transition-all duration-200 text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-primary/5"
@@ -34,7 +34,6 @@ const { headings } = Astro.props;
     </div>
   )}
 
-  <!-- 右CTA：グラデーション枠線スタイル -->
   <div class="relative rounded-xl p-[1px] bg-gradient-to-br from-primary via-blue-500 to-primary/30">
     <div class="rounded-xl bg-gray-50 dark:bg-zinc-900 p-4">
       <p class="text-[10px] font-bold tracking-widest uppercase text-primary mb-1">🎁 限定特典</p>
@@ -47,35 +46,47 @@ const { headings } = Astro.props;
   </div>
 </aside>
 
-<script>
-  const headingEls = Array.from(document.querySelectorAll("main h2[id], main h3[id]"));
-  const tocLinks = Array.from(document.querySelectorAll("a[data-toc-id]"));
+<script is:inline>
+(function() {
+  function initToc() {
+    const headingEls = Array.from(document.querySelectorAll("main h2[id], main h3[id]"));
+    const tocLinks = Array.from(document.querySelectorAll("a[data-toc-id]"));
 
-  function setActive(id) {
-    tocLinks.forEach((link) => {
-      const bar = link.querySelector(".toc-bar");
-      if (link.dataset.tocId === id) {
-        link.classList.add("text-primary", "font-semibold", "bg-primary/5");
-        link.classList.remove("text-gray-500", "dark:text-gray-400");
-        if (bar) bar.style.background = "#2563EB";
-      } else {
-        link.classList.remove("text-primary", "font-semibold", "bg-primary/5");
-        link.classList.add("text-gray-500", "dark:text-gray-400");
-        if (bar) bar.style.background = "transparent";
-      }
-    });
-  }
+    if (headingEls.length === 0 || tocLinks.length === 0) return;
 
-  function onScroll() {
-    const y = window.scrollY + 140;
-    let cur = headingEls[0]?.id ?? "";
-    for (const el of headingEls) {
-      if (el.offsetTop <= y) cur = el.id;
-      else break;
+    function setActive(id) {
+      tocLinks.forEach(function(link) {
+        const bar = link.querySelector(".toc-bar");
+        if (link.dataset.tocId === id) {
+          link.classList.add("text-primary", "font-semibold", "bg-primary/5");
+          link.classList.remove("text-gray-500");
+          if (bar) bar.style.background = "#2563EB";
+        } else {
+          link.classList.remove("text-primary", "font-semibold", "bg-primary/5");
+          link.classList.add("text-gray-500");
+          if (bar) bar.style.background = "transparent";
+        }
+      });
     }
-    if (cur) setActive(cur);
+
+    function onScroll() {
+      const y = window.scrollY + 140;
+      let cur = headingEls[0].id;
+      for (var i = 0; i < headingEls.length; i++) {
+        if (headingEls[i].offsetTop <= y) cur = headingEls[i].id;
+        else break;
+      }
+      setActive(cur);
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
   }
 
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initToc);
+  } else {
+    initToc();
+  }
+})();
 </script>
