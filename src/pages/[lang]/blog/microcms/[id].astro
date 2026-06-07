@@ -7,59 +7,47 @@ import { isRtl, useTranslations } from '~/i18n/utils';
 import { languages } from '~/i18n/ui';
 import translate from 'translate';
 
-// デフォルトでGoogle翻訳エンジンを使用するように設定
 translate.engine = 'google';
 
 export async function getStaticPaths() {
   const response = await client.get({ endpoint: 'blogs' });
   const posts = response.contents;
-
   return posts.flatMap((post: any) =>
     Object.keys(languages).map((lang) => ({
       params: { lang, id: post.id },
-      props: { post },
+      props: { post, allPosts: posts },
     }))
   );
 }
 
-const { post } = Astro.props;
+const { post, allPosts } = Astro.props;
 const { lang } = Astro.params;
 const t = useTranslations(lang);
 
-// HTMLタグを壊さずに安全にGoogle翻訳する関数
 async function translateHtml(htmlText: string, targetLang: string) {
   if (!htmlText) return '';
   try {
-    // 1. HTMLタグを退避するプレースホルダーの配列を作成
     const placeholders: string[] = [];
     let placeholderIndex = 0;
-    
-    // <...> で囲まれたHTMLタグを検出し、一時的に [[数字]] に置き換える
     const maskedHtml = htmlText.replace(/<[^>]+>/g, (match) => {
       placeholders.push(match);
       return ` [[${placeholderIndex++}]] `;
     });
-    
-    // 2. テキストだけになったデータをGoogle翻訳に送る
     const translatedMasked = await translate(maskedHtml, { from: 'ja', to: targetLang });
-    
-    // 3. [[数字]] のプレースホルダーを、退避させておいた元のHTMLタグに戻す
     const finalHtml = translatedMasked.replace(/\[\[(\d+)\]\]/g, (match, indexStr) => {
       const index = parseInt(indexStr, 10);
       return placeholders[index] || match;
     });
-    
     return finalHtml;
   } catch (error) {
     console.error('Google translation failed:', error);
-    return htmlText; // 失敗時は元の日本語をそのまま表示して壊れるのを防ぐ
+    return htmlText;
   }
 }
 
 let displayTitle = post.title;
 let displayContent = post.content;
 
-// 英語モード(en)の場合のみ、ビルド時に自動でGoogle翻訳を実行する
 if (lang === 'en') {
   try {
     displayTitle = await translate(post.title, { from: 'ja', to: 'en' });
@@ -68,32 +56,186 @@ if (lang === 'en') {
     console.error("Translation run error:", e);
   }
 }
+
+// 目次生成
+function extractHeadings(html: string) {
+  const headings: { id: string; text: string; level: number }[] = [];
+  const regex = /<h([23])[^>]*>(.*?)<\/h[23]>/gi;
+  let match;
+  while ((match = regex.exec(html)) !== null) {
+    const level = parseInt(match[1]);
+    const text = match[2].replace(/<[^>]+>/g, '');
+    const id = text.replace(/\s+/g, '-').replace(/[^\w\-]/g, '').toLowerCase();
+    headings.push({ id, text, level });
+  }
+  return headings;
+}
+
+// 本文にidを付与
+function addHeadingIds(html: string) {
+  return html.replace(/<h([23])([^>]*)>(.*?)<\/h[23]>/gi, (match, level, attrs, text) => {
+    const cleanText = text.replace(/<[^>]+>/g, '');
+    const id = cleanText.replace(/\s+/g, '-').replace(/[^\w\-]/g, '').toLowerCase();
+    return `<h${level}${attrs} id="${id}">${text}</h${level}>`;
+  });
+}
+
+const headings = extractHeadings(displayContent);
+displayContent = addHeadingIds(displayContent);
+
+const otherPosts = allPosts.filter((p: any) => p.id !== post.id).slice(0, 3);
 ---
 
 <Layout title={displayTitle} description={displayTitle} image={post.eyecatch?.url} imageAlt={displayTitle} article={true}>
   <ScrollProgress />
-  <article class="max-w-4xl mx-auto px-6 pt-40 pb-20">
-    <div class="mb-8">
+  
+  <div class="max-w-7xl mx-auto px-4 pt-32 pb-20">
+    <!-- 戻るリンク -->
+    <div class="mb-6">
       <a href={`/${lang}/blog/microcms`} class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class={`w-4 h-4 ${isRtl(lang) ? 'rotate-180' : ''}`}><path d="m15 18-6-6 6-6"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         {t['blog.back']}
       </a>
     </div>
 
-    <div class="mb-12 text-center">
-      {post.eyecatch && (
-        <div class="rounded-2xl overflow-hidden mb-8 border border-black/10 dark:border-white/10 shadow-2xl">
-          <img src={post.eyecatch.url} alt={displayTitle} loading="eager" class="w-full object-cover aspect-video" />
+    <!-- アイキャッチ -->
+    {post.eyecatch && (
+      <div class="rounded-2xl overflow-hidden mb-8 border border-black/10 dark:border-white/10 shadow-xl">
+        <img src={post.eyecatch.url} alt={displayTitle} loading="eager" class="w-full object-cover aspect-video" />
+      </div>
+    )}
+
+    <!-- タイトル -->
+    <h1 class="text-2xl md:text-4xl font-bold mb-8 leading-tight text-zinc-900 dark:text-white">
+      {displayTitle}
+    </h1>
+
+    <!-- 3カラムレイアウト -->
+    <div class="flex gap-8 items-start">
+
+      <!-- 左サイドバー：記事一覧 -->
+      <aside class="hidden xl:block w-56 shrink-0 sticky top-24">
+        <div class="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4">
+          <p class="text-xs font-bold uppercase tracking-widest text-primary mb-3">攻略ブログ</p>
+          <ul class="space-y-2">
+            {allPosts.map((p: any) => (
+              <li>
+                
+                  href={`/${lang}/blog/microcms/${p.id}`}
+                  class={`block text-sm leading-snug py-1.5 px-2 rounded-lg transition-colors ${p.id === post.id ? 'bg-primary/10 text-primary font-semibold' : 'text-gray-600 dark:text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-white/5'}`}
+                >
+                  {p.title}
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
-      )}
 
-      <h1 class="text-3xl md:text-6xl font-display font-bold mb-6 break-words bg-linear-to-br from-zinc-900 via-zinc-900 to-zinc-600 dark:from-white dark:via-white dark:to-white bg-clip-text text-transparent">
-        {displayTitle}
-      </h1>
+        <!-- CTAバナー左 -->
+        <div class="mt-4 bg-gradient-to-br from-primary to-blue-600 rounded-xl p-4 text-white">
+          <p class="text-xs font-bold mb-1">🎁 限定特典</p>
+          <p class="text-sm font-semibold mb-3">ツール完全版を無料解放中</p>
+          <a href="https://astro.space/ja/" class="block text-center bg-white text-primary text-xs font-bold py-2 px-3 rounded-lg hover:bg-white/90 transition-colors">
+            今すぐ口座開設
+          </a>
+        </div>
+      </aside>
 
-      <hr class="border-black/10 dark:border-white/10" />
+      <!-- 本文 -->
+      <main class="min-w-0 flex-1">
+        <div class="prose prose-base md:prose-lg mx-auto max-w-none
+          prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-white
+          prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-gray-200 dark:prose-h2:border-white/10
+          prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3
+          prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed
+          prose-li:text-gray-700 dark:prose-li:text-gray-300
+          prose-a:text-primary hover:prose-a:text-primary/80 prose-a:no-underline hover:prose-a:underline
+          prose-strong:text-zinc-900 dark:prose-strong:text-white
+          prose-img:rounded-xl prose-img:shadow-lg
+          dark:prose-invert"
+          set:html={displayContent}
+        />
+
+        <!-- 記事下CTA -->
+        <div class="mt-16 rounded-2xl bg-gradient-to-br from-primary/10 via-blue-500/5 to-transparent border border-primary/20 p-8 text-center">
+          <p class="text-xs font-bold uppercase tracking-widest text-primary mb-2">🎁 当サイト限定特典</p>
+          <h3 class="text-xl font-bold mb-3 text-zinc-900 dark:text-white">ASTROサインツール完全版を無料で手に入れる</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">当サイト経由でASTROに口座開設するだけで、22種類以上の指標搭載ツールと高勝率プリセットを完全無料でプレゼント。</p>
+          <a href="https://astro.space/ja/" class="inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-8 py-4 rounded-full hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
+            今すぐ無料で口座開設する →
+          </a>
+        </div>
+
+        <!-- 関連記事 -->
+        {otherPosts.length > 0 && (
+          <div class="mt-12">
+            <h2 class="text-lg font-bold mb-4 text-zinc-900 dark:text-white">関連記事</h2>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {otherPosts.map((p: any) => (
+                <a href={`/${lang}/blog/microcms/${p.id}`} class="group block rounded-xl border border-gray-200 dark:border-white/10 overflow-hidden hover:border-primary/40 transition-colors">
+                  {p.eyecatch && (
+                    <img src={p.eyecatch.url} alt={p.title} class="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300" />
+                  )}
+                  <div class="p-4">
+                    <p class="text-sm font-semibold text-zinc-900 dark:text-white line-clamp-2 group-hover:text-primary transition-colors">{p.title}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
+
+      <!-- 右サイドバー：目次＋CTA -->
+      <aside class="hidden lg:block w-56 shrink-0 sticky top-24">
+        <!-- 目次 -->
+        {headings.length > 0 && (
+          <div class="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4 mb-4">
+            <p class="text-xs font-bold uppercase tracking-widest text-primary mb-3">目次</p>
+            <ul class="space-y-1">
+              {headings.map((h) => (
+                <li>
+                  
+                    href={`#${h.id}`}
+                    class={`block text-xs leading-snug py-1 transition-colors hover:text-primary text-gray-600 dark:text-gray-400 ${h.level === 3 ? 'pl-3' : ''}`}
+                  >
+                    {h.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <!-- 右CTAバナー -->
+        <div class="bg-gradient-to-br from-primary to-blue-600 rounded-xl p-4 text-white">
+          <p class="text-xs font-bold mb-1">🎁 限定特典</p>
+          <p class="text-sm font-semibold mb-3">ツール完全版を無料解放中</p>
+          <a href="https://astro.space/ja/" class="block text-center bg-white text-primary text-xs font-bold py-2 px-3 rounded-lg hover:bg-white/90 transition-colors">
+            今すぐ口座開設
+          </a>
+        </div>
+      </aside>
+
     </div>
+  </div>
 
-    <div class="prose prose-lg mx-auto prose-img:rounded-xl prose-headings:font-display prose-headings:font-bold prose-a:text-primary hover:prose-a:text-primary/80 dark:prose-invert" set:html={displayContent} />
-  </article>
+  <script>
+    // 目次のアクティブリンク
+    const headingEls = document.querySelectorAll('h2[id], h3[id]');
+    const tocLinks = document.querySelectorAll('aside a[href^="#"]');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          tocLinks.forEach((link) => {
+            link.classList.remove('text-primary', 'font-semibold');
+            if (link.getAttribute('href') === `#${entry.target.id}`) {
+              link.classList.add('text-primary', 'font-semibold');
+            }
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0% -70% 0%' });
+    headingEls.forEach((el) => observer.observe(el));
+  </script>
 </Layout>
