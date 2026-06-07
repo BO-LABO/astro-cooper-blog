@@ -226,7 +226,7 @@ const otherPosts = (allPosts as any[]).filter((p: any) => p.id !== post.id).slic
         if ((link as any).dataset.tocId === id) {
           link.classList.add('text-primary', 'font-semibold', 'bg-primary/5');
           link.classList.remove('text-gray-500');
-          if (bar) bar.style.backgroundColor = 'var(--color-primary, #f97316)';
+          if (bar) bar.style.backgroundColor = '#2563EB';
         } else {
           link.classList.remove('text-primary', 'font-semibold', 'bg-primary/5');
           link.classList.add('text-gray-500');
