@@ -71,10 +71,10 @@ const { headings } = Astro.props;
       var activeLink = document.querySelector("a[data-toc-id='" + id + "']");
       var tocList = document.getElementById("toc-list");
       if (activeLink && tocList) {
-        var linkTop = activeLink.offsetTop;
-        var listHeight = tocList.clientHeight;
-        var linkHeight = activeLink.clientHeight;
-        tocList.scrollTo({ top: linkTop - listHeight / 2 + linkHeight / 2, behavior: "smooth" });
+        var linkRect = activeLink.getBoundingClientRect();
+        var listRect = tocList.getBoundingClientRect();
+        var offset = linkRect.top - listRect.top - tocList.clientHeight / 2 + activeLink.clientHeight / 2;
+        tocList.scrollBy({ top: offset, behavior: "smooth" });
       }
     }
 
