@@ -9,7 +9,7 @@ interface Props {
 }
 const { headings } = Astro.props;
 ---
-<aside class="hidden lg:flex lg:flex-col w-52 shrink-0 sticky top-24 gap-4" style="max-height:calc(100vh - 6rem); overflow:visible; position:relative">
+<aside class="hidden lg:flex lg:flex-col w-52 shrink-0 sticky top-32 gap-4" style="max-height:calc(100vh - 6rem); overflow:visible; position:relative">
   {headings.length > 0 && (
     <div class="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4">
       <p class="text-xs font-bold uppercase tracking-widest text-primary mb-3">目次</p>
@@ -55,6 +55,14 @@ const { headings } = Astro.props;
     if (headingEls.length === 0 || tocLinks.length === 0) return;
 
     function setActive(id) {
+      // アクティブ項目をTOCの中央に
+      var tocList = document.getElementById("toc-list");
+      var activeLink = document.querySelector("a[data-toc-id='" + id + "']");
+      if (activeLink && tocList) {
+        var linkOffsetTop = activeLink.offsetTop;
+        var centerOffset = linkOffsetTop - (tocList.clientHeight / 2) + (activeLink.clientHeight / 2);
+        tocList.scrollTop = centerOffset;
+      }
       tocLinks.forEach(function(link) {
         const bar = link.querySelector(".toc-bar");
         if (link.dataset.tocId === id) {
