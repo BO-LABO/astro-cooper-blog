@@ -14,7 +14,7 @@ const { headings } = Astro.props;
     <div class="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4">
       <p class="text-xs font-bold uppercase tracking-widest text-primary mb-3">目次</p>
       <nav>
-        <ul class="space-y-0.5" id="toc-list" >
+        <ul class="space-y-0.5" id="toc-list" style="max-height:50vh; overflow-y:auto; scrollbar-width:none">
           {headings.map((h) => (
             <li>
               
