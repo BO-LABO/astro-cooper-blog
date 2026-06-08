@@ -9,12 +9,12 @@ interface Props {
 }
 const { headings } = Astro.props;
 ---
-<aside class="hidden lg:flex lg:flex-col w-52 shrink-0 sticky top-24 gap-4" style="max-height:calc(100vh - 6rem); overflow:hidden">
+<aside class="hidden lg:flex lg:flex-col w-52 shrink-0 sticky top-24 gap-4" style="max-height:calc(100vh - 6rem); overflow:visible; position:relative">
   {headings.length > 0 && (
     <div class="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4">
       <p class="text-xs font-bold uppercase tracking-widest text-primary mb-3">目次</p>
       <nav>
-        <ul class="space-y-0.5" id="toc-list" style="overflow-y:auto; max-height:60vh; scrollbar-width:thin">
+        <ul class="space-y-0.5" id="toc-list" >
           {headings.map((h) => (
             <li>
               
@@ -68,14 +68,7 @@ const { headings } = Astro.props;
         }
       });
       // アクティブ項目がTOCリスト内で見えるようスクロール
-      var activeLink = document.querySelector("a[data-toc-id='" + id + "']");
-      var tocList = document.getElementById("toc-list");
-      if (activeLink && tocList) {
-        var linkRect = activeLink.getBoundingClientRect();
-        var listRect = tocList.getBoundingClientRect();
-        var offset = linkRect.top - listRect.top - tocList.clientHeight / 2 + activeLink.clientHeight / 2;
-        tocList.scrollBy({ top: offset, behavior: "smooth" });
-      }
+
     }
 
     function onScroll() {
